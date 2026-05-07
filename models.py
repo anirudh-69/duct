@@ -17,6 +17,7 @@ class Task:
     function: str = ""
     params: Dict[str, Any] = field(default_factory=dict)
     retry: int = 0
+    retry_delay: float = 1.0
     priority: int = 10
     timeout: Optional[int] = 3600
     result_persist: bool = False
@@ -33,3 +34,4 @@ class RunContext:
     run_id: str
     output_base: Path
     mode: str = "dev"
+    timeout_override: Optional[int] = None
