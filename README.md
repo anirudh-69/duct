@@ -1,0 +1,1 @@
+![Duct Data Architecture Diagram](img/data-architecture.png)
