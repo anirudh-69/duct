@@ -2,6 +2,7 @@
 
 **Duct** is a lightweight, TOML-configured data pipeline engine for Python. It handles task scheduling, dependency resolution, parallel execution, retry logic, timeout enforcement, and result persistence — so you can focus on writing the logic.
 
+![](img/data-architecture.png)
 ---
 
 ## Features
