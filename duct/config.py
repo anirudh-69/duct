@@ -1,3 +1,10 @@
+"""Pipeline configuration loader.
+
+Loads TOML pipeline definitions and constructs Pipeline and Task objects.
+Supports environment variable substitution in string parameter values using
+the `${VAR_NAME}` syntax.
+"""
+
 import os
 import re
 import tomllib
@@ -13,6 +20,7 @@ def _substitute_env(value: str) -> str:
     return _ENV_VAR_RE.sub(replacer, value)
 
 def _process_params(params: dict) -> dict:
+    """Recursively substitute environment variables in string parameter values."""
     new = {}
     for k, v in params.items():
         if isinstance(v, str):
@@ -23,16 +31,32 @@ def _process_params(params: dict) -> dict:
             new[k] = v
     return new
 
-def load_config(config_path: Path) -> Pipeline:
+def load_pipeline(config_path: Path) -> Pipeline:
+    """Load a pipeline definition from a TOML configuration file.
+
+    Parses the TOML file, validates task definitions, and returns a
+    Pipeline object with all tasks configured. Environment variable
+    substitution is applied to string parameter values.
+
+    Args:
+        config_path: Path to the pipeline TOML file.
+
+    Returns:
+        A Pipeline instance with tasks loaded.
+
+    Raises:
+        KeyError: If required pipeline fields are missing.
+        ValueError: If task configuration is invalid.
+    """
     with open(config_path, "rb") as f:
         config = tomllib.load(f)
-    
+
     pipeline_name = config["name"]["name"]
     tasks = []
     for t_name, t_data in config["tasks"].items():
         tasks.append(Task(
             name=t_name,
-            type=TaskType[t_data["type"]],
+            type=TaskType(t_data["type"]),
             depends_on=t_data.get("depends_on", []),
             function=t_data.get("function", ""),
             params=_process_params(t_data.get("params", {})),
@@ -46,4 +70,4 @@ def load_config(config_path: Path) -> Pipeline:
         name=pipeline_name,
         tasks=tasks,
         config=config.get("config", {})
-        )
+    )

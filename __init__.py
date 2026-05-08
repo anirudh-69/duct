@@ -1,0 +1,1 @@
+"""duct – Production‑grade pure‑stdlib data pipeline engine."""

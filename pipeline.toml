@@ -1,0 +1,101 @@
+[name]
+name = "complex_etl"
+
+[tasks.extract_products]
+type = "extract"
+function = "tasks:extract_products"
+priority = 8
+
+[tasks.extract_customers]
+type = "extract"
+function = "tasks:extract_customers"
+priority = 7
+
+[tasks.extract_orders]
+type = "extract"
+function = "tasks:extract_orders"
+priority = 9
+
+[tasks.enrich_products]
+type = "transform"
+depends_on = ["extract_products", "extract_customers"]
+function = "tasks:enrich_products"
+retry = 2
+retry_delay = 0.5
+priority = 6
+
+[tasks.enrich_customers]
+type = "transform"
+depends_on = ["extract_customers", "extract_orders"]
+function = "tasks:enrich_customers"
+retry = 2
+result_persist = true
+priority = 5
+
+[tasks.transform_orders]
+type = "transform"
+depends_on = ["extract_orders"]
+function = "tasks:transform_orders"
+priority = 6
+
+[tasks.aggregate_revenue]
+type = "transform"
+depends_on = ["enrich_products", "transform_orders"]
+function = "tasks:aggregate_revenue"
+result_persist = true
+priority = 4
+
+[tasks.merge_orders_product]
+type = "transform"
+depends_on = ["transform_orders", "enrich_products"]
+function = "tasks:merge_orders_product"
+result_persist = true
+priority = 4
+
+[tasks.quality_check]
+type = "quality"
+depends_on = ["enrich_products", "enrich_customers"]
+function = "tasks:quality_check"
+retry = 3
+timeout = 10
+priority = 3
+
+[tasks.quality_aggregate]
+type = "quality"
+depends_on = ["aggregate_revenue"]
+function = "tasks:quality_aggregate"
+priority = 3
+
+[tasks.aggregate_by_customer]
+type = "transform"
+depends_on = ["merge_orders_product"]
+function = "tasks:aggregate_by_customer"
+priority = 3
+
+[tasks.lineage_check]
+type = "quality"
+depends_on = ["merge_orders_product"]
+function = "tasks:lineage_check"
+retry = 2
+timeout = 5
+priority = 2
+
+[tasks.prepare_final_dataset]
+type = "transform"
+depends_on = ["aggregate_by_customer", "quality_aggregate"]
+function = "tasks:prepare_final_dataset"
+priority = 2
+
+[tasks.final_quality_check]
+type = "quality"
+depends_on = ["prepare_final_dataset", "lineage_check"]
+function = "tasks:final_quality_check"
+retry = 3
+timeout = 10
+priority = 1
+
+[tasks.export_report]
+type = "load"
+depends_on = ["final_quality_check", "prepare_final_dataset"]
+function = "tasks:export_report"
+result_persist = true
