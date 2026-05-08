@@ -22,16 +22,6 @@
 
 ---
 
-## Installation
-
-```bash
-pip install duct        # or: pip install -e .
-```
-
-Requirements: Python 3.11+ (uses `tomllib` from stdlib, `graphlib` from stdlib).
-
----
-
 ## Quick Start
 
 ### 1. Define your tasks
